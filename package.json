@@ -1,0 +1,30 @@
+{
+    "name": "burmese-chat-bot",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "commit": "cz-customizable",
+        "dev": "next dev --turbopack",
+        "bot": "bun --watch bot/index.ts ",
+        "build": "next build --turbopack",
+        "start": "next start",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    },
+    "dependencies": {
+        "convex": "^1.26.2",
+        "grammy": "^1.38.2",
+        "next": "15.5.2",
+        "react": "19.1.0",
+        "react-dom": "19.1.0"
+    },
+    "devDependencies": {
+        "typescript": "^5",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "cz-customizable": "^7.0.0",
+        "prettier": "^3.5.3",
+        "@tailwindcss/postcss": "^4",
+        "tailwindcss": "^4"
+    }
+}

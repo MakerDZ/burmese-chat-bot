@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
+import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
+import { ConvexClientProvider } from '@/providers/ConvexClientProvider';
 import { TelegramProvider } from '@/providers/TelegramProvider';
 
 const geistSans = Geist({
@@ -25,20 +27,24 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" suppressHydrationWarning>
-            <head>
-                <Script
-                    src="https://telegram.org/js/telegram-web-app.js"
-                    strategy="beforeInteractive"
-                    id="telegram-webapp"
-                />
-            </head>
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-                suppressHydrationWarning
-            >
-                <TelegramProvider>{children}</TelegramProvider>
-            </body>
-        </html>
+        <ConvexAuthNextjsServerProvider>
+            <html lang="en" suppressHydrationWarning>
+                <head>
+                    <Script
+                        src="https://telegram.org/js/telegram-web-app.js"
+                        strategy="beforeInteractive"
+                        id="telegram-webapp"
+                    />
+                </head>
+                <body
+                    className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                    suppressHydrationWarning
+                >
+                    <ConvexClientProvider>
+                        <TelegramProvider>{children}</TelegramProvider>
+                    </ConvexClientProvider>
+                </body>
+            </html>
+        </ConvexAuthNextjsServerProvider>
     );
 }

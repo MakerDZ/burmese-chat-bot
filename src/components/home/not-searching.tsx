@@ -1,7 +1,7 @@
 'use client';
 
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
-import { ChatHeader } from '@/components/chat/chat-header';
+import { HomeHeader } from '@/components/home/home-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { ChatInput } from '@/components/chat/chat-input';
 import { toast } from 'sonner';
@@ -12,13 +12,16 @@ import {
     useLayoutEffect,
     useCallback,
 } from 'react';
-import { useRouter } from 'next/navigation';
 
 import type { Message } from '@/components/chat/chat-messages';
 
-export default function ChatPage({ params }: { params: { id: string } }) {
+interface NotSearchingProps {
+    onEndChat?: () => void;
+    onNewPartner?: () => void;
+}
+
+export function NotSearching({ onEndChat, onNewPartner }: NotSearchingProps) {
     const { backgroundColor } = useTelegramTheme();
-    const router = useRouter();
     const bottomRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const hasScrolledToBottomRef = useRef(false);
@@ -27,6 +30,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         text: string;
         type: 'text' | 'image';
     } | null>(null);
+    const [isFriendAdded, setIsFriendAdded] = useState(false); // Track if partner is already added as friend
 
     // Reset scroll flag when component mounts
     useEffect(() => {
@@ -121,22 +125,41 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         hasScrolledToBottomRef.current = false;
     };
 
-    const handleEndChat = () => {
-        handleSendMessage('I need to end this conversation. Take care! 👋');
-        toast.info('Chat ended');
-    };
+    // Click management functions for dropdown menu
+    const handleAddFriend = useCallback(() => {
+        if (isFriendAdded) {
+            // Accept friend request
+            handleSendMessage("I'd like to accept your friend request! 🤝");
+            toast.success('Friend request accepted!');
+        } else {
+            // Send friend request
+            handleSendMessage('Hi! Would you like to be friends? 👋');
+            toast.success('Friend request sent!');
+        }
+        setIsFriendAdded(true);
+    }, [isFriendAdded, handleSendMessage]);
 
-    const handleEndAndDeleteChat = () => {
-        toast.info('Chat ended and deleted');
-        // Navigate back to home page after a short delay
-        setTimeout(() => {
-            router.push('/chat');
-        }, 1000);
-    };
+    const handleEndChat = useCallback(() => {
+        handleSendMessage(
+            'I think we should end our conversation here. Take care! 👋'
+        );
+        toast.info('Chat ended');
+        // Call parent callback to change state
+        onEndChat?.();
+    }, [handleSendMessage, onEndChat]);
+
+    const handleNewPartner = useCallback(() => {
+        handleSendMessage(
+            'I think we should find new conversation partners. What do you think? 💭'
+        );
+        toast.info('New partner request sent');
+        // Call parent callback to simulate searching
+        onNewPartner?.();
+    }, [handleSendMessage, onNewPartner]);
 
     return (
         <div className="flex flex-col min-h-screen" style={{ backgroundColor }}>
-            <ChatHeader
+            <HomeHeader
                 title="Watermelon"
                 avatarUrl="https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg"
                 profile={{
@@ -148,12 +171,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                     gender: 'female',
                     bornYear: 1995,
                 }}
+                isFriendAdded={isFriendAdded}
+                onAddFriend={handleAddFriend}
                 onEndChat={handleEndChat}
-                onEndAndDeleteChat={handleEndAndDeleteChat}
+                onNewPartner={handleNewPartner}
             />
             <div
                 ref={scrollContainerRef}
-                className="flex-1 overflow-y-auto"
+                className="flex-1 overflow-y-auto pb-[120px]"
                 style={{ scrollBehavior: 'smooth' }}
             >
                 <ChatMessages
@@ -165,11 +190,15 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                 {/* Add some padding to ensure the bottom ref is clearly at the bottom */}
                 <div ref={bottomRef} className="h-4" />
             </div>
-            <ChatInput
-                onSendMessage={handleSendMessage}
-                replyTo={replyTo || undefined}
-                onCancelReply={() => setReplyTo(null)}
-            />
+
+            {/* Fixed ChatInput positioned above bottom menu */}
+            <div className="fixed bottom-[79px] left-0 right-0 z-20">
+                <ChatInput
+                    onSendMessage={handleSendMessage}
+                    replyTo={replyTo || undefined}
+                    onCancelReply={() => setReplyTo(null)}
+                />
+            </div>
         </div>
     );
 }

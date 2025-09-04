@@ -4,13 +4,22 @@ import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
+import { ProfileDialog } from '@/components/profile/profile-dialog';
 
 interface ChatHeaderProps {
     title: string;
     avatarUrl: string;
+    profile?: {
+        telegramId: string;
+        avatarUrl: string;
+        name: string;
+        bio?: string;
+        gender?: 'male' | 'female';
+        bornYear?: number;
+    };
 }
 
-export function ChatHeader({ title, avatarUrl }: ChatHeaderProps) {
+export function ChatHeader({ title, avatarUrl, profile }: ChatHeaderProps) {
     const { isDark, textColor, backgroundColor } = useTelegramTheme();
     const router = useRouter();
 
@@ -34,14 +43,34 @@ export function ChatHeader({ title, avatarUrl }: ChatHeaderProps) {
                 >
                     <ChevronLeft size={24} />
                 </button>
-                <Image
-                    src={avatarUrl}
-                    alt={title}
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                />
-                <span className="font-medium">{title}</span>
+                {profile ? (
+                    <ProfileDialog
+                        profile={profile}
+                        trigger={
+                            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80">
+                                <Image
+                                    src={avatarUrl}
+                                    alt={title}
+                                    width={32}
+                                    height={32}
+                                    className="rounded-full"
+                                />
+                                <span className="font-medium">{title}</span>
+                            </div>
+                        }
+                    />
+                ) : (
+                    <div className="flex items-center gap-3">
+                        <Image
+                            src={avatarUrl}
+                            alt={title}
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                        />
+                        <span className="font-medium">{title}</span>
+                    </div>
+                )}
             </div>
         </div>
     );

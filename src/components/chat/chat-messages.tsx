@@ -11,16 +11,21 @@ import {
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { Copy, Reply, Image as ImageIcon } from 'lucide-react';
+import { ProfileDialog } from '@/components/profile/profile-dialog';
 
-interface Message {
+export interface Message {
     _id: string;
     chatRoomId: string;
     senderUserId: string;
     message?: string;
     createdAt: number;
     senderProfile?: {
+        telegramId: string;
         avatarUrl: string;
         name: string;
+        bio?: string;
+        gender?: 'male' | 'female';
+        bornYear?: number;
     };
     attachments?: Array<{
         type: 'image' | 'video' | 'file';
@@ -37,12 +42,14 @@ interface ChatMessagesProps {
     messages: Message[];
     currentUserId: string;
     onReply?: (message: Message) => void;
+    onImageLoad?: () => void;
 }
 
 export function ChatMessages({
     messages,
     currentUserId,
     onReply,
+    onImageLoad,
 }: ChatMessagesProps) {
     const { isDark, textColor } = useTelegramTheme();
     const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
@@ -83,27 +90,39 @@ export function ChatMessages({
                                         cancelOnMovement: true,
                                     }
                                 )}
+                                onContextMenu={(e) => {
+                                    // Prevent context menu during long press
+                                    if (selectedMessageId === message._id) {
+                                        e.preventDefault();
+                                    }
+                                }}
                                 className={`flex items-end gap-2 ${
                                     isMe ? 'flex-row-reverse' : ''
                                 }`}
-                                onContextMenu={(e) => {
-                                    e.preventDefault();
-                                    setSelectedMessageId(message._id);
-                                }}
                             >
                                 {!isMe && message.senderProfile && (
-                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                                        <Image
-                                            src={
-                                                message.senderProfile.avatarUrl
-                                            }
-                                            alt={message.senderProfile.name}
-                                            width={32}
-                                            height={32}
-                                            className="w-full h-full object-cover"
-                                            draggable={false}
-                                        />
-                                    </div>
+                                    <ProfileDialog
+                                        profile={message.senderProfile}
+                                        trigger={
+                                            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80">
+                                                <Image
+                                                    src={
+                                                        message.senderProfile
+                                                            .avatarUrl
+                                                    }
+                                                    alt={
+                                                        message.senderProfile
+                                                            .name
+                                                    }
+                                                    width={32}
+                                                    height={32}
+                                                    className="w-full h-full object-cover"
+                                                    draggable={false}
+                                                    onLoad={onImageLoad}
+                                                />
+                                            </div>
+                                        }
+                                    />
                                 )}
                                 <div
                                     className={`max-w-[70%] rounded-2xl px-4 py-2 select-none ${
@@ -149,6 +168,8 @@ export function ChatMessages({
                                                             height={200}
                                                             className="w-full object-cover"
                                                             draggable={false}
+                                                            onLoad={onImageLoad}
+                                                            priority={index < 3} // Load first few images with priority
                                                         />
                                                     </div>
                                                 );

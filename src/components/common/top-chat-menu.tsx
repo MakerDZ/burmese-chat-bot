@@ -17,7 +17,7 @@ export function TopChatMenu() {
                 borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
             }}
         >
-            <div className="flex justify-between items-center">
+            <div className="flex justify-center items-center">
                 <div className="flex items-center gap-2">
                     <Image
                         src="https://i.pinimg.com/1200x/5d/98/e1/5d98e1f50ecd12004269fbfa0ada2a9d.jpg"
@@ -33,7 +33,7 @@ export function TopChatMenu() {
                         Sakar Pyaw
                     </span>
                 </div>
-                <button
+                {/* <button
                     className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors"
                     style={{
                         backgroundColor: isDark
@@ -56,7 +56,7 @@ export function TopChatMenu() {
                         <path d="M12 5v14M5 12h14" />
                     </svg>
                     <span className="text-sm">Random Chat 🐱</span>
-                </button>
+                </button> */}
             </div>
         </div>
     );

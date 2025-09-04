@@ -144,7 +144,7 @@ export function ProfileComponent({
 
     return (
         <div
-            className="min-h-screen w-11/12 sm:max-w-md mx-auto p-4"
+            className="w-11/12 sm:max-w-md mx-auto p-4 pb-20 overflow-y-auto"
             style={{
                 color: textColor,
             }}
@@ -263,8 +263,10 @@ export function ProfileComponent({
                                     : backgroundColor,
                                 color: textColor,
                                 borderColor: errors.name
-                                    ? undefined
-                                    : hintColor,
+                                    ? '#ef4444' // red-500
+                                    : isDark
+                                      ? 'rgba(255,255,255,0.3)'
+                                      : 'rgba(0,0,0,0.3)',
                             }}
                         />
                         {errors.name && (
@@ -295,7 +297,9 @@ export function ProfileComponent({
                                 ? 'rgba(255,255,255,0.1)'
                                 : backgroundColor,
                             color: textColor,
-                            borderColor: hintColor,
+                            borderColor: isDark
+                                ? 'rgba(255,255,255,0.3)'
+                                : 'rgba(0,0,0,0.3)',
                         }}
                     />
                 </div>
@@ -319,7 +323,9 @@ export function ProfileComponent({
                                 ? 'rgba(255,255,255,0.1)'
                                 : backgroundColor,
                             color: textColor,
-                            borderColor: hintColor,
+                            borderColor: isDark
+                                ? 'rgba(255,255,255,0.3)'
+                                : 'rgba(0,0,0,0.3)',
                         }}
                     >
                         <option value="">Select gender</option>
@@ -353,7 +359,9 @@ export function ProfileComponent({
                                 ? 'rgba(255,255,255,0.1)'
                                 : backgroundColor,
                             color: textColor,
-                            borderColor: hintColor,
+                            borderColor: isDark
+                                ? 'rgba(255,255,255,0.3)'
+                                : 'rgba(0,0,0,0.3)',
                         }}
                     >
                         <option value="">Select year</option>

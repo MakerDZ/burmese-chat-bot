@@ -52,7 +52,7 @@ export function ChatItem({
             cancelOnMovement: true,
             onCancel: (event) => {
                 // If it wasn't a long press, treat it as a normal click
-                router.push(`/${id}`);
+                router.push(`/chat/${id}`);
             },
         }
     );

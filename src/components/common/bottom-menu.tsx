@@ -18,7 +18,10 @@ export function BottomMenu() {
         return null;
     }
 
-    const shouldShowMenu = !(pathname && /^\/[0-9a-f-]+$/.test(pathname));
+    const shouldShowMenu = !(
+        pathname &&
+        (pathname.startsWith('/chat/') || /^\/[0-9a-f-]+$/.test(pathname))
+    );
 
     if (!shouldShowMenu) {
         return null;
@@ -51,6 +54,36 @@ export function BottomMenu() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                         >
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.3-4.3" />
+                        </svg>
+                    </div>
+                    <span
+                        className="text-xs mt-0.5"
+                        style={{ color: textColor }}
+                    >
+                        Search
+                    </span>
+                </Link>
+
+                <div className="w-6 h-10 "></div>
+
+                <Link href="/chat" className="flex flex-col items-center">
+                    <div
+                        className={`p-2 rounded-lg transition-colors ${pathname === '/chat' ? (isDark ? 'bg-white/10' : 'bg-black/10') : ''}`}
+                        style={{ color: textColor }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                         </svg>
                     </div>
@@ -61,8 +94,7 @@ export function BottomMenu() {
                         Chats
                     </span>
                 </Link>
-
-                <div className="w-10 h-10 "></div>
+                <div className="w-6 h-10 "></div>
 
                 <Link href="/profile" className="flex flex-col items-center">
                     <div

@@ -5,41 +5,99 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatMessages } from '@/components/chat/chat-messages';
 import { ChatInput } from '@/components/chat/chat-input';
 import { toast } from 'sonner';
-import { useRef, useEffect, useState } from 'react';
+import {
+    useRef,
+    useEffect,
+    useState,
+    useLayoutEffect,
+    useCallback,
+} from 'react';
 
-type Message = {
-    _id: string;
-    chatRoomId: string;
-    senderUserId: string;
-    message?: string;
-    createdAt: number;
-    senderProfile?: {
-        avatarUrl: string;
-        name: string;
-    };
-    attachments?: Array<{
-        type: 'image' | 'video' | 'file';
-        url: string;
-    }>;
-    replyToMessageId?: string;
-    replyPreview?: {
-        type: string;
-        text: string;
-    };
-};
+import type { Message } from '@/components/chat/chat-messages';
 
 export default function ChatPage({ params }: { params: { id: string } }) {
     const { backgroundColor } = useTelegramTheme();
     const bottomRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const hasScrolledToBottomRef = useRef(false);
     const [replyTo, setReplyTo] = useState<{
         id: string;
         text: string;
         type: 'text' | 'image';
     } | null>(null);
 
+    // Reset scroll flag when component mounts
     useEffect(() => {
-        bottomRef.current?.scrollIntoView();
+        hasScrolledToBottomRef.current = false;
     }, []);
+
+    // Improved scroll to bottom function
+    const scrollToBottom = useCallback(
+        (behavior: 'smooth' | 'auto' = 'auto') => {
+            const scrollContainer = scrollContainerRef.current;
+            if (scrollContainer && bottomRef.current) {
+                // Use scrollIntoView first
+                bottomRef.current.scrollIntoView({
+                    behavior,
+                    block: 'end',
+                    inline: 'nearest',
+                });
+
+                // Then force scroll to absolute bottom as backup
+                requestAnimationFrame(() => {
+                    if (scrollContainer) {
+                        scrollContainer.scrollTop =
+                            scrollContainer.scrollHeight;
+                    }
+                });
+
+                hasScrolledToBottomRef.current = true;
+            }
+        },
+        []
+    );
+
+    // Handle image load events to re-scroll
+    const handleImageLoad = useCallback(() => {
+        if (!hasScrolledToBottomRef.current) {
+            // Small delay to ensure DOM is updated
+            setTimeout(() => scrollToBottom(), 50);
+        }
+    }, [scrollToBottom]);
+
+    useLayoutEffect(() => {
+        if (MOCK_MESSAGES.length > 0 && !hasScrolledToBottomRef.current) {
+            // Multiple attempts with increasing delays to handle async content loading
+            const scrollAttempts = [0, 100, 300, 500];
+
+            scrollAttempts.forEach((delay, index) => {
+                setTimeout(() => {
+                    if (
+                        !hasScrolledToBottomRef.current ||
+                        index === scrollAttempts.length - 1
+                    ) {
+                        scrollToBottom();
+                    }
+                }, delay);
+            });
+
+            // Set up a ResizeObserver to handle dynamic content size changes
+            const scrollContainer = scrollContainerRef.current;
+            if (scrollContainer && 'ResizeObserver' in window) {
+                const resizeObserver = new ResizeObserver(() => {
+                    if (!hasScrolledToBottomRef.current) {
+                        scrollToBottom();
+                    }
+                });
+
+                resizeObserver.observe(scrollContainer);
+
+                return () => {
+                    resizeObserver.disconnect();
+                };
+            }
+        }
+    }, [MOCK_MESSAGES.length, scrollToBottom]);
 
     const handleReply = (message: Message) => {
         setReplyTo({
@@ -50,18 +108,15 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     };
 
     const handleSendMessage = (text: string, files?: File[]) => {
-        // Here you would normally send the message to your backend
-        // For now, just show a toast
         toast.success(
             files?.length
                 ? `Sending message with ${files.length} files...`
                 : 'Sending message...'
         );
         setReplyTo(null);
-        // Scroll to bottom after sending
-        setTimeout(() => {
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+
+        // Reset scroll flag so new messages will trigger scroll
+        hasScrolledToBottomRef.current = false;
     };
 
     return (
@@ -69,14 +124,29 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             <ChatHeader
                 title="Watermelon"
                 avatarUrl="https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg"
+                profile={{
+                    telegramId: 'watermelon123',
+                    avatarUrl:
+                        'https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg',
+                    name: 'Watermelon',
+                    bio: 'I love Mexican food! 🌮',
+                    gender: 'female',
+                    bornYear: 1995,
+                }}
             />
-            <div className="flex-1 overflow-y-auto">
+            <div
+                ref={scrollContainerRef}
+                className="flex-1 overflow-y-auto"
+                style={{ scrollBehavior: 'smooth' }}
+            >
                 <ChatMessages
                     messages={MOCK_MESSAGES}
                     currentUserId="current-user-id"
                     onReply={handleReply}
+                    onImageLoad={handleImageLoad}
                 />
-                <div ref={bottomRef} />
+                {/* Add some padding to ensure the bottom ref is clearly at the bottom */}
+                <div ref={bottomRef} className="h-4" />
             </div>
             <ChatInput
                 onSendMessage={handleSendMessage}
@@ -88,9 +158,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 }
 
 const WATERMELON_PROFILE = {
+    telegramId: 'watermelon123',
     name: 'Watermelon',
     avatarUrl:
         'https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg',
+    bio: 'I love Mexican food! 🌮',
+    gender: 'female' as const,
+    bornYear: 1995,
 };
 
 // Mock data following the schema structure

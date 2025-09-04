@@ -8,6 +8,12 @@ const bot = new Bot(process.env.BOT_TOKEN!);
 console.log('Bot is running...');
 
 bot.command('start', (ctx) => {
+    client.mutation(api.user.createUser, {
+        telegramId: ctx.from?.id.toString() ?? '',
+        firstName: ctx.from?.first_name ?? '',
+        lastName: ctx.from?.last_name ?? '',
+        username: ctx.from?.username ?? '',
+    });
     const keyboard = new InlineKeyboard()
         .webApp('🙊 chat မယ်', process.env.APP_BASE_URL!)
         .row()

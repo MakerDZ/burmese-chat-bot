@@ -2,34 +2,17 @@
 
 import { useTelegram } from '@/providers/TelegramProvider';
 import { useEffect, useState } from 'react';
-import { useAuthActions } from '@convex-dev/auth/react';
+import { useAction } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 export default function Home() {
     const { user, initData, theme } = useTelegram();
     const [mounted, setMounted] = useState(false);
-    const { signIn } = useAuthActions();
+    const secureAction = useAction(api.verify.validateTelegramUser);
 
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    // Handle sign in when user is available
-    useEffect(() => {
-        if (user) {
-            const fd = new FormData();
-            fd.set('email', user.id.toString() + '@telegram.com');
-            fd.set('password', user.id.toString());
-            fd.set('flow', 'signUp');
-            fd.set('username', user.username ?? '');
-            fd.set('name', user.first_name ?? '');
-            fd.set('telegramId', user.id.toString());
-
-            async function signInUser() {
-                await signIn('password', fd);
-            }
-            signInUser();
-        }
-    }, [user, signIn]);
 
     // Simple function to detect dark/light theme
     const isDarkTheme =

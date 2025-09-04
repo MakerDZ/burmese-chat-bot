@@ -6,7 +6,7 @@ import { ChatList } from '@/components/chat/chat-list';
 
 export default function Home() {
     const {
-        user,
+        profile,
         isLoading: isUserLoading,
         isValidating,
         error,
@@ -28,7 +28,7 @@ export default function Home() {
         return <div className="text-red-500">Error: {error}</div>;
     }
 
-    if (!user) {
+    if (!profile) {
         return (
             <div
                 className="flex flex-col min-h-screen w-full"

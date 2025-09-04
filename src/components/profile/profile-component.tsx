@@ -36,13 +36,7 @@ const YEAR_RANGE = Array.from({ length: 100 }, (_, i) =>
     (new Date().getFullYear() - i).toString()
 );
 
-export function ProfileComponent({
-    profile,
-    telegramId,
-}: {
-    profile: any;
-    telegramId: string;
-}) {
+export function ProfileComponent({ profile }: { profile: any }) {
     const updateProfile = useMutation(api.profile.updateProfile);
     const { theme } = useTelegram();
     const { isDark, textColor, backgroundColor, hintColor } =

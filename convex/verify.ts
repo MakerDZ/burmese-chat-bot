@@ -37,21 +37,13 @@ export const validateTelegramUser = action({
         args
     ): Promise<{
         ok: true;
-        user: {
-            _id: string;
-            _creationTime: number;
-            telegramId?: string | undefined;
-            firstName?: string | undefined;
-            lastName?: string | undefined;
-            username?: string | undefined;
-        } | null;
         profile: {
             _id: string;
             _creationTime: number;
             bio?: string | undefined;
             gender?: 'male' | 'female' | undefined;
             bornYear?: number | undefined;
-            telegramId: string;
+            userId: string;
             avatarUrl: string;
             name: string;
         } | null;
@@ -63,10 +55,24 @@ export const validateTelegramUser = action({
             throw new Error('Invalid Telegram initData');
         }
 
-        const { user, profile } = await ctx.runQuery(api.user.getUser, {
+        const { profile } = await ctx.runQuery(api.user.getUser, {
             telegramId: args.user,
         });
 
-        return { ok: true, user: user, profile: profile };
+        // Remove telegramId from the returned profile for security
+        const safeProfile = profile
+            ? {
+                  _id: profile._id,
+                  _creationTime: profile._creationTime,
+                  bio: profile.bio,
+                  gender: profile.gender,
+                  bornYear: profile.bornYear,
+                  userId: profile.userId,
+                  avatarUrl: profile.avatarUrl,
+                  name: profile.name,
+              }
+            : null;
+
+        return { ok: true, profile: safeProfile };
     },
 });

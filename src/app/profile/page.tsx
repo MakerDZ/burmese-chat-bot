@@ -5,7 +5,7 @@ import { Loading } from '@/components/ui/loading';
 import { useValidateTelegramUser } from '@/hooks/useValidateTelegramUser';
 
 export default function Profile() {
-    const { user, profile, isLoading, isValidating, error } =
+    const { profile, isLoading, isValidating, error } =
         useValidateTelegramUser();
 
     if (isLoading || isValidating) {
@@ -16,9 +16,9 @@ export default function Profile() {
         return <div className="text-red-500">Error: {error}</div>;
     }
 
-    if (!user) {
+    if (!profile) {
         return <Loading />;
     }
 
-    return <ProfileComponent profile={profile} telegramId={user.telegramId} />;
+    return <ProfileComponent profile={profile} />;
 }

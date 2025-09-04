@@ -20,8 +20,9 @@ export const createUser = mutation({
             return user;
         }
 
-        await ctx.db.insert('users', args);
-        await ctx.db.insert('profiles', {
+        const newUser = await ctx.db.insert('users', args);
+        return await ctx.db.insert('profiles', {
+            userId: newUser,
             telegramId: args.telegramId,
             avatarUrl:
                 'https://i.pinimg.com/736x/00/9f/c0/009fc09a302e18d5cb0c1ecc75d728e5.jpg',
@@ -35,13 +36,6 @@ export const getUser = query({
         telegramId: v.string(),
     },
     handler: async (ctx, args) => {
-        const user = await ctx.db
-            .query('users')
-            .withIndex('by_telegramId', (q) =>
-                q.eq('telegramId', args.telegramId)
-            )
-            .first();
-
         const profile = await ctx.db
             .query('profiles')
             .withIndex('by_telegramId', (q) =>
@@ -49,6 +43,6 @@ export const getUser = query({
             )
             .first();
 
-        return { user, profile };
+        return { profile };
     },
 });

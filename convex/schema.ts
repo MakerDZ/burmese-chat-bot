@@ -12,13 +12,16 @@ export default defineSchema({
 
     // profiles
     profiles: defineTable({
+        userId: v.id('users'),
         telegramId: v.string(),
         avatarUrl: v.string(),
         name: v.string(),
         bio: v.optional(v.string()),
         gender: v.optional(v.union(v.literal('male'), v.literal('female'))),
         bornYear: v.optional(v.number()),
-    }).index('by_telegramId', ['telegramId']),
+    })
+        .index('by_userId', ['userId'])
+        .index('by_telegramId', ['telegramId']),
 
     // chats rooms
     chatRooms: defineTable({
@@ -26,6 +29,9 @@ export default defineSchema({
         createdAt: v.number(),
         lastMessageAt: v.optional(v.number()),
         lastMessagePreview: v.optional(v.string()),
+        type: v.optional(v.union(v.literal('matching'), v.literal('friend'))),
+        isEnded: v.optional(v.boolean()),
+        isDeleted: v.optional(v.boolean()),
     }).index('by_participantIds', ['participantIds']),
 
     // chat messages

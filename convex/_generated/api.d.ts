@@ -13,7 +13,6 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as chatRooms from "../chatRooms.js";
 import type * as profile from "../profile.js";
 import type * as user from "../user.js";
 import type * as verify from "../verify.js";
@@ -27,7 +26,6 @@ import type * as verify from "../verify.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  chatRooms: typeof chatRooms;
   profile: typeof profile;
   user: typeof user;
   verify: typeof verify;

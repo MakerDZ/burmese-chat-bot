@@ -1,79 +1,45 @@
 'use client';
 
-import { useTelegram } from '@/providers/TelegramProvider';
-import { useEffect, useState } from 'react';
-import { useAction } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { TopChatMenu } from '@/components/common/top-chat-menu';
+import { useTelegramTheme } from '@/hooks/useTelegramTheme';
+import { useValidateTelegramUser } from '@/hooks/useValidateTelegramUser';
+import { ChatList } from '@/components/chat/chat-list';
 
 export default function Home() {
-    const { user, initData, theme } = useTelegram();
-    const [mounted, setMounted] = useState(false);
-    const secureAction = useAction(api.verify.validateTelegramUser);
+    const {
+        user,
+        profile,
+        isLoading: isUserLoading,
+        isValidating,
+        error,
+    } = useValidateTelegramUser();
+    const { backgroundColor } = useTelegramTheme();
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    // Simple function to detect dark/light theme
-    const isDarkTheme =
-        theme?.bg_color?.toLowerCase().startsWith('#1') ||
-        theme?.bg_color?.toLowerCase().startsWith('#2') ||
-        theme?.bg_color?.toLowerCase().startsWith('#0');
-
-    if (!mounted) {
-        return (
-            <main className="p-6">
-                <h1 className="text-xl font-bold">
-                    Hello from Telegram Mini App 👋
-                </h1>
-                <div className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mt-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2 mt-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3 mt-2"></div>
-                </div>
-            </main>
-        );
+    if (error) {
+        return <div className="text-red-500">Error: {error}</div>;
     }
 
     if (!user) {
         return (
-            <main className="p-6">
-                <h1 className="text-xl font-bold">
-                    Hello from Telegram Mini App 👋
-                </h1>
-                <p style={{ color: theme?.hint_color }}>
-                    No Telegram user detected (are you opening inside Telegram?)
-                </p>
-            </main>
+            <div
+                className="flex flex-col min-h-screen w-full"
+                style={{ backgroundColor }}
+            >
+                <TopChatMenu />
+                <ChatList isLoading={isUserLoading || isValidating} />
+            </div>
         );
     }
 
     return (
-        <main className="p-6">
-            <h1 className="text-xl font-bold">
-                Hello from Telegram Mini App 👋
-            </h1>
-
-            {theme && (
-                <p className="mt-2">
-                    Current theme: {isDarkTheme ? 'Dark' : 'Light'}
-                </p>
-            )}
-
-            <div>
-                <p suppressHydrationWarning>User ID: {user.id}</p>
-                <p suppressHydrationWarning>
-                    Name: {user.first_name} {user.last_name}
-                </p>
-                <p suppressHydrationWarning>Username: @{user.username}</p>
-                <p suppressHydrationWarning>Language: {user.language_code}</p>
-                <pre
-                    className="p-2 mt-2 rounded bg-gray-100"
-                    suppressHydrationWarning
-                >
-                    {initData}
-                </pre>
+        <div
+            className="flex flex-col min-h-screen w-full pb-20"
+            style={{ backgroundColor }}
+        >
+            <TopChatMenu />
+            <div className="overflow-y-auto flex-1">
+                <ChatList isLoading={isUserLoading || isValidating} />
             </div>
-        </main>
+        </div>
     );
 }

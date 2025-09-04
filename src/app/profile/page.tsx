@@ -17,8 +17,8 @@ export default function Profile() {
     }
 
     if (!user) {
-        return <div>No user data available</div>;
+        return <Loading />;
     }
 
-    return <ProfileComponent profile={profile} />;
+    return <ProfileComponent profile={profile} telegramId={user.telegramId} />;
 }

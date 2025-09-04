@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTelegram } from '@/providers/TelegramProvider';
+import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 import { useMutation } from 'convex/react';
 import {
     useProfileValidation,
@@ -35,9 +36,17 @@ const YEAR_RANGE = Array.from({ length: 100 }, (_, i) =>
     (new Date().getFullYear() - i).toString()
 );
 
-export function ProfileComponent({ profile }: { profile: any }) {
-    // const updateProfile = useMutation(api.profile.updateProfile);
+export function ProfileComponent({
+    profile,
+    telegramId,
+}: {
+    profile: any;
+    telegramId: string;
+}) {
+    const updateProfile = useMutation(api.profile.updateProfile);
     const { theme } = useTelegram();
+    const { isDark, textColor, backgroundColor, hintColor } =
+        useTelegramTheme();
     const [mounted, setMounted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState<ProfileFormData>({
@@ -73,20 +82,21 @@ export function ProfileComponent({ profile }: { profile: any }) {
         try {
             if (validateProfile(formData)) {
                 setIsSubmitting(true);
-                // await updateProfile({
-                //     profile: {
-                //         name: formData.name,
-                //         bio: formData.bio ?? '',
-                //         gender:
-                //             formData.gender === ''
-                //                 ? undefined
-                //                 : (formData.gender as 'male' | 'female'),
-                //         bornYear: formData.bornYear
-                //             ? parseInt(formData.bornYear)
-                //             : undefined,
-                //         avatarUrl: formData.avatarUrl,
-                //     },
-                // });
+                await updateProfile({
+                    telegramId: telegramId,
+                    profile: {
+                        name: formData.name,
+                        bio: formData.bio ?? '',
+                        gender:
+                            formData.gender === ''
+                                ? undefined
+                                : (formData.gender as 'male' | 'female'),
+                        bornYear: formData.bornYear
+                            ? parseInt(formData.bornYear)
+                            : undefined,
+                        avatarUrl: formData.avatarUrl,
+                    },
+                });
                 toast.success('Profile updated successfully');
             } else {
                 toast.error('Validation failed');
@@ -98,12 +108,6 @@ export function ProfileComponent({ profile }: { profile: any }) {
             setIsSubmitting(false);
         }
     };
-
-    // Detect dark/light theme
-    const isDarkTheme =
-        theme?.bg_color?.toLowerCase().startsWith('#1') ||
-        theme?.bg_color?.toLowerCase().startsWith('#2') ||
-        theme?.bg_color?.toLowerCase().startsWith('#0');
 
     if (!mounted) {
         return (
@@ -127,22 +131,22 @@ export function ProfileComponent({ profile }: { profile: any }) {
     }
 
     const buttonStyle = {
-        backgroundColor: isDarkTheme ? '#FFFFFF' : '#000000',
-        color: isDarkTheme ? '#000000' : '#FFFFFF',
-        border: `1px solid ${isDarkTheme ? '#FFFFFF' : '#000000'}`,
+        backgroundColor: isDark ? '#FFFFFF' : '#000000',
+        color: isDark ? '#000000' : '#FFFFFF',
+        border: `1px solid ${isDark ? '#FFFFFF' : '#000000'}`,
     };
 
     const buttonOutlineStyle = {
-        backgroundColor: isDarkTheme ? '#1F1F1F' : '#FFFFFF',
-        color: isDarkTheme ? '#FFFFFF' : '#000000',
-        border: `1px solid ${isDarkTheme ? '#FFFFFF' : '#000000'}`,
+        backgroundColor: isDark ? '#1F1F1F' : '#FFFFFF',
+        color: isDark ? '#FFFFFF' : '#000000',
+        border: `1px solid ${isDark ? '#FFFFFF' : '#000000'}`,
     };
 
     return (
         <div
             className="min-h-screen w-11/12 sm:max-w-md mx-auto p-4"
             style={{
-                color: theme?.text_color,
+                color: textColor,
             }}
         >
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -172,21 +176,21 @@ export function ProfileComponent({ profile }: { profile: any }) {
                         <div
                             className="rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
                             style={{
-                                backgroundColor: theme?.bg_color,
-                                color: theme?.text_color,
+                                backgroundColor: backgroundColor,
+                                color: textColor,
                             }}
                         >
                             <div className="flex justify-between items-center mb-4">
                                 <h3
                                     className="text-lg font-semibold"
-                                    style={{ color: theme?.text_color }}
+                                    style={{ color: textColor }}
                                 >
                                     Choose Profile Picture
                                 </h3>
                                 <button
                                     onClick={() => setShowAvatarModal(false)}
                                     className="p-2 hover:bg-black/5 rounded-full transition-colors"
-                                    style={{ color: theme?.text_color }}
+                                    style={{ color: textColor }}
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -237,7 +241,7 @@ export function ProfileComponent({ profile }: { profile: any }) {
                 <div className="space-y-2">
                     <label
                         className="text-sm font-medium"
-                        style={{ color: theme?.text_color }}
+                        style={{ color: textColor }}
                     >
                         Name
                     </label>
@@ -254,13 +258,13 @@ export function ProfileComponent({ profile }: { profile: any }) {
                             placeholder="Enter your name"
                             className={`w-full ${errors.name ? 'border-red-500' : ''}`}
                             style={{
-                                backgroundColor: isDarkTheme
+                                backgroundColor: isDark
                                     ? 'rgba(255,255,255,0.1)'
-                                    : theme?.bg_color,
-                                color: theme?.text_color,
+                                    : backgroundColor,
+                                color: textColor,
                                 borderColor: errors.name
                                     ? undefined
-                                    : theme?.hint_color,
+                                    : hintColor,
                             }}
                         />
                         {errors.name && (
@@ -275,7 +279,7 @@ export function ProfileComponent({ profile }: { profile: any }) {
                 <div className="space-y-2">
                     <label
                         className="text-sm font-medium"
-                        style={{ color: theme?.text_color }}
+                        style={{ color: textColor }}
                     >
                         Bio
                     </label>
@@ -287,11 +291,11 @@ export function ProfileComponent({ profile }: { profile: any }) {
                         placeholder="Write something about yourself"
                         className="flex min-h-[100px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         style={{
-                            backgroundColor: isDarkTheme
+                            backgroundColor: isDark
                                 ? 'rgba(255,255,255,0.1)'
-                                : theme?.bg_color,
-                            color: theme?.text_color,
-                            borderColor: theme?.hint_color,
+                                : backgroundColor,
+                            color: textColor,
+                            borderColor: hintColor,
                         }}
                     />
                 </div>
@@ -300,7 +304,7 @@ export function ProfileComponent({ profile }: { profile: any }) {
                 <div className="space-y-2">
                     <label
                         className="text-sm font-medium"
-                        style={{ color: theme?.text_color }}
+                        style={{ color: textColor }}
                     >
                         Gender
                     </label>
@@ -311,11 +315,11 @@ export function ProfileComponent({ profile }: { profile: any }) {
                         }
                         className="w-full rounded-md border px-3 py-2"
                         style={{
-                            backgroundColor: isDarkTheme
+                            backgroundColor: isDark
                                 ? 'rgba(255,255,255,0.1)'
-                                : theme?.bg_color,
-                            color: theme?.text_color,
-                            borderColor: theme?.hint_color,
+                                : backgroundColor,
+                            color: textColor,
+                            borderColor: hintColor,
                         }}
                     >
                         <option value="">Select gender</option>
@@ -331,7 +335,7 @@ export function ProfileComponent({ profile }: { profile: any }) {
                 <div className="space-y-2">
                     <label
                         className="text-sm font-medium"
-                        style={{ color: theme?.text_color }}
+                        style={{ color: textColor }}
                     >
                         Born Year
                     </label>
@@ -345,11 +349,11 @@ export function ProfileComponent({ profile }: { profile: any }) {
                         }
                         className="w-full rounded-md border px-3 py-2"
                         style={{
-                            backgroundColor: isDarkTheme
+                            backgroundColor: isDark
                                 ? 'rgba(255,255,255,0.1)'
-                                : theme?.bg_color,
-                            color: theme?.text_color,
-                            borderColor: theme?.hint_color,
+                                : backgroundColor,
+                            color: textColor,
+                            borderColor: hintColor,
                         }}
                     >
                         <option value="">Select year</option>

@@ -4,7 +4,7 @@ import Script from 'next/script';
 import './globals.css';
 import { ConvexClientProvider } from '@/providers/ConvexClientProvider';
 import { TelegramProvider } from '@/providers/TelegramProvider';
-
+import { BottomMenu } from '@/components/common/bottom-menu';
 import { Toaster } from '@/components/ui/sonner';
 
 const geistSans = Geist({
@@ -42,7 +42,12 @@ export default function RootLayout({
             >
                 <Toaster />
                 <TelegramProvider>
-                    <ConvexClientProvider>{children}</ConvexClientProvider>
+                    <ConvexClientProvider>
+                        <main className="flex flex-col min-h-screen relative">
+                            {children}
+                            <BottomMenu />
+                        </main>
+                    </ConvexClientProvider>
                 </TelegramProvider>
             </body>
         </html>

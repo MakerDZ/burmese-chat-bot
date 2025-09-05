@@ -13,5 +13,5 @@ export default function Profile() {
         return <Loading />;
     }
 
-    return <ProfileComponent profile={data} />;
+    return <ProfileComponent initData={initData} profile={data} />;
 }

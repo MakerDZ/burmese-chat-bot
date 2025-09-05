@@ -5,10 +5,9 @@ import { validateInitData } from './verify';
 export const createChatRoom = mutation({
     args: {
         initData: v.string(),
-        telegramId: v.string(),
     },
     handler: async (ctx, args) => {
-        const isValid = validateInitData(
+        const isValid = await validateInitData(
             args.initData,
             process.env.TELEGRAM_BOT_TOKEN!
         );
@@ -16,10 +15,15 @@ export const createChatRoom = mutation({
             throw new Error('Invalid Telegram initData');
         }
 
+        // ✅ Parse safe user data after validation
+        const urlParams = new URLSearchParams(args.initData);
+        const userJson = urlParams.get('user');
+        const user = userJson ? JSON.parse(userJson) : null;
+
         const participantId = await ctx.db
             .query('users')
             .withIndex('by_telegramId', (q) =>
-                q.eq('telegramId', args.telegramId)
+                q.eq('telegramId', user.id.toString())
             )
             .first();
 
@@ -48,10 +52,9 @@ export const createChatRoom = mutation({
 export const amIInMatchingRoom = query({
     args: {
         initData: v.string(),
-        telegramId: v.string(),
     },
     handler: async (ctx, args) => {
-        const isValid = validateInitData(
+        const isValid = await validateInitData(
             args.initData,
             process.env.TELEGRAM_BOT_TOKEN!
         );
@@ -59,10 +62,15 @@ export const amIInMatchingRoom = query({
             throw new Error('Invalid Telegram initData');
         }
 
+        // ✅ Parse safe user data after validation
+        const urlParams = new URLSearchParams(args.initData);
+        const userJson = urlParams.get('user');
+        const user = userJson ? JSON.parse(userJson) : null;
+
         const participantId = await ctx.db
             .query('users')
             .withIndex('by_telegramId', (q) =>
-                q.eq('telegramId', args.telegramId)
+                q.eq('telegramId', user.id.toString())
             )
             .first();
         if (!participantId) {

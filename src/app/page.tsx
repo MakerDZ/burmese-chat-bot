@@ -19,7 +19,7 @@ export default function Home() {
         data,
         isPending: isAmIInMatchingRoomPending,
         error: errorAmIInMatchingRoom,
-    } = useAmIInMatchingRoom(initData!, user?.id.toString() ?? '');
+    } = useAmIInMatchingRoom(initData!);
 
     const { backgroundColor } = useTelegramTheme();
 
@@ -56,7 +56,6 @@ export default function Home() {
                         try {
                             await createChatRoom({
                                 initData,
-                                telegramId: user?.id.toString() ?? '',
                             });
                         } catch (error) {
                             setIsCreatingRoom(false);

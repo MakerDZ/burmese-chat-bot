@@ -64,15 +64,15 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({
             const webApp = (window as any).Telegram?.WebApp;
             if (webApp) {
                 setTg(webApp);
-                setUser(webApp.initDataUnsafe?.user || null);
+
                 setInitData(webApp.initData || null);
                 setTheme(webApp.themeParams || null);
 
                 try {
                     const result = await validateTelegramUser({
                         initData: webApp.initData,
-                        user: webApp.initDataUnsafe?.user.id.toString(),
                     });
+                    setUser(result.user || null);
                     setValidationResult({
                         error: null,
                     });

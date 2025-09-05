@@ -1,8 +1,5 @@
 import { mutation } from './_generated/server';
 import { v } from 'convex/values';
-import { api } from './_generated/api';
-
-// No "use node"
 
 function toHex(buf: ArrayBuffer) {
     return Array.from(new Uint8Array(buf))
@@ -52,27 +49,29 @@ export async function validateInitData(initData: string, botToken: string) {
     );
     const computedHex = toHex(signature);
 
-    return computedHex === hash;
+    return computedHex === hash.toLowerCase();
 }
 
 export const validateTelegramUser = mutation({
     args: {
         initData: v.string(),
-        user: v.string(),
     },
-    handler: async (
-        ctx,
-        args
-    ): Promise<{
-        ok: true;
-    }> => {
+    handler: async (ctx, args) => {
         const botToken = process.env.TELEGRAM_BOT_TOKEN!;
-        const isValid = validateInitData(args.initData, botToken);
+        const isValid = await validateInitData(args.initData, botToken);
 
         if (!isValid) {
             throw new Error('Invalid Telegram initData');
         }
 
-        return { ok: true };
+        // ✅ Parse safe user data after validation
+        const urlParams = new URLSearchParams(args.initData);
+        const userJson = urlParams.get('user');
+        const user = userJson ? JSON.parse(userJson) : null;
+
+        return {
+            ok: true,
+            user, // contains user.id, first_name, etc.
+        };
     },
 });

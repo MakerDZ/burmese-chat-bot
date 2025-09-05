@@ -11,7 +11,7 @@ import { useMutation } from 'convex/react';
 import { useState } from 'react';
 
 export default function Home() {
-    const { initData, user, validationError } = useTelegram();
+    const { initData, user, validationError, validatedProfile } = useTelegram();
     const createChatRoom = useMutation(api.room.createChatRoom);
     const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
@@ -28,7 +28,8 @@ export default function Home() {
         validationError ||
         !initData ||
         isAmIInMatchingRoomPending ||
-        errorAmIInMatchingRoom
+        errorAmIInMatchingRoom ||
+        !validatedProfile
     ) {
         return (
             <div
@@ -67,6 +68,8 @@ export default function Home() {
                 />
             ) : (
                 <NotSearching
+                    myProfile={validatedProfile}
+                    chatRoomId={data.chatRoomId}
                     onEndChat={handleEndChat}
                     onNewPartner={handleNewPartner}
                 />

@@ -14,13 +14,30 @@ import {
 } from 'react';
 
 import type { Message } from '@/components/chat/chat-messages';
+import type { Id } from '../../../convex/_generated/dataModel';
+import { useGetMatchingRoom } from '@/hooks/useChatRoom';
+import { type TelegramProfile } from '@/providers/TelegramProvider';
 
 interface NotSearchingProps {
+    chatRoomId: Id<'chatRooms'>;
+    myProfile: TelegramProfile;
     onEndChat?: () => void;
     onNewPartner?: () => void;
 }
 
-export function NotSearching({ onEndChat, onNewPartner }: NotSearchingProps) {
+export function NotSearching({
+    myProfile,
+    onEndChat,
+    onNewPartner,
+    chatRoomId,
+}: NotSearchingProps) {
+    const { data: chatRoom, isLoading: isGetMatchingRoomLoading } =
+        useGetMatchingRoom(chatRoomId);
+
+    const myPartner = chatRoom?.participantProfiles.find(
+        (profile) => profile.userId !== myProfile.userId
+    );
+
     const { backgroundColor } = useTelegramTheme();
     const bottomRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -160,17 +177,12 @@ export function NotSearching({ onEndChat, onNewPartner }: NotSearchingProps) {
     return (
         <div className="flex flex-col min-h-screen" style={{ backgroundColor }}>
             <HomeHeader
-                title="Watermelon"
-                avatarUrl="https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg"
-                profile={{
-                    telegramId: 'watermelon123',
-                    avatarUrl:
-                        'https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg',
-                    name: 'Watermelon',
-                    bio: 'I love Mexican food! 🌮',
-                    gender: 'female',
-                    bornYear: 1995,
-                }}
+                title={myPartner?.name || ''}
+                avatarUrl={
+                    myPartner?.avatarUrl ||
+                    'https://i.pinimg.com/736x/00/9f/c0/009fc09a302e18d5cb0c1ecc75d728e5.jpg'
+                }
+                profile={myPartner}
                 isFriendAdded={isFriendAdded}
                 onAddFriend={handleAddFriend}
                 onEndChat={handleEndChat}
@@ -184,6 +196,7 @@ export function NotSearching({ onEndChat, onNewPartner }: NotSearchingProps) {
                 <ChatMessages
                     messages={MOCK_MESSAGES}
                     currentUserId="current-user-id"
+                    senderProfile={myPartner}
                     onReply={handleReply}
                     onImageLoad={handleImageLoad}
                 />
@@ -203,16 +216,6 @@ export function NotSearching({ onEndChat, onNewPartner }: NotSearchingProps) {
     );
 }
 
-const WATERMELON_PROFILE = {
-    telegramId: 'watermelon123',
-    name: 'Watermelon',
-    avatarUrl:
-        'https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg',
-    bio: 'I love Mexican food! 🌮',
-    gender: 'female' as const,
-    bornYear: 1995,
-};
-
 // Mock data following the schema structure
 const MOCK_MESSAGES: Message[] = [
     {
@@ -221,7 +224,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'Hey! Welcome to Sakar Pyaw 👋',
         createdAt: Date.now() - 50000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '2',
@@ -236,7 +238,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'What kind of food do you like?',
         createdAt: Date.now() - 40000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '4',
@@ -251,7 +252,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'Oh, can you bring some salsa?',
         createdAt: Date.now() - 30000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '6',
@@ -276,7 +276,6 @@ const MOCK_MESSAGES: Message[] = [
                 url: 'https://i.pinimg.com/736x/da/2d/f6/da2df612c785b2cf2ee1437eb43516d7.jpg',
             },
         ],
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '8',
@@ -296,7 +295,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'Great choice! That one is really good 👍',
         createdAt: Date.now() - 10000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '10',
@@ -328,7 +326,6 @@ const MOCK_MESSAGES: Message[] = [
             type: 'image',
             text: '',
         },
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '13',
@@ -336,7 +333,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'We should definitely go there sometime!',
         createdAt: Date.now() - 2000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '14',

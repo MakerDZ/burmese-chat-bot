@@ -52,11 +52,7 @@ export default defineSchema({
         type: v.union(v.literal('matching'), v.literal('friend')),
         userId: v.id('users'),
     })
-        .index('by_userId', ['userId'])
-        .index('by_chatRoomId', ['chatRoomId'])
-        .index('by_userId_chatRoomId', ['userId', 'chatRoomId'])
-        .index('by_status', ['status'])
-        .index('by_type', ['type'])
+        .index('by_status_type', ['status', 'type'])
         .index('by_type_userId', ['type', 'userId']),
 
     // chat messages

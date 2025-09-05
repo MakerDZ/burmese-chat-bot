@@ -11,7 +11,8 @@ import {
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
 
 type ProfileData = {
-    telegramId: string;
+    _id: string;
+    userId: string;
     avatarUrl: string;
     name: string;
     bio?: string;

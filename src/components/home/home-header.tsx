@@ -15,7 +15,8 @@ export interface HomeHeaderProps {
     title: string;
     avatarUrl: string;
     profile?: {
-        telegramId: string;
+        _id: string;
+        userId: string;
         avatarUrl: string;
         name: string;
         bio?: string;

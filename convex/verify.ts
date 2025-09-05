@@ -68,10 +68,21 @@ export const validateTelegramUser = mutation({
         const urlParams = new URLSearchParams(args.initData);
         const userJson = urlParams.get('user');
         const user = userJson ? JSON.parse(userJson) : null;
+        
+        const profile = await ctx.db
+            .query('profiles')
+            .withIndex('by_telegramId', (q) =>
+                q.eq('telegramId', user.id.toString())
+            )
+            .first();
+        if (!profile) {
+            throw new Error('Profile not found');
+        }
 
         return {
             ok: true,
             user, // contains user.id, first_name, etc.
+            profile,
         };
     },
 });

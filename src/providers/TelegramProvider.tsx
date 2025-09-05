@@ -12,6 +12,13 @@ type TelegramUser = {
     language_code?: string;
     photo_url?: string;
 };
+export type TelegramProfile = {
+    _id: string;
+    userId: string;
+    telegramId: string;
+    avatarUrl: string;
+    name: string;
+};
 
 type TelegramTheme = {
     bg_color?: string;
@@ -26,8 +33,9 @@ type TelegramTheme = {
 type TelegramContextType = {
     tg: any | null;
     user: TelegramUser | null;
-    initData: string | null;
+    validatedProfile: TelegramProfile | null;
     validationError: string | null;
+    initData: string | null;
     theme: TelegramTheme | null;
     loading: boolean;
 };
@@ -35,6 +43,7 @@ type TelegramContextType = {
 const TelegramContext = createContext<TelegramContextType>({
     tg: null,
     user: null,
+    validatedProfile: null,
     initData: null,
     validationError: null,
     theme: null,
@@ -49,6 +58,8 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({
     const [tg, setTg] = useState<any | null>(null);
     const [user, setUser] = useState<TelegramUser | null>(null);
     const [initData, setInitData] = useState<string | null>(null);
+    const [validatedProfile, setValidatedProfile] =
+        useState<TelegramProfile | null>(null);
     const [theme, setTheme] = useState<TelegramTheme | null>(null);
     const [loading, setLoading] = useState(true);
     const validateTelegramUser = useMutation(api.verify.validateTelegramUser);
@@ -73,6 +84,7 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({
                         initData: webApp.initData,
                     });
                     setUser(result.user || null);
+                    setValidatedProfile(result.profile || null);
                     setValidationResult({
                         error: null,
                     });
@@ -100,6 +112,7 @@ export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({
     const contextValue = {
         tg,
         user,
+        validatedProfile,
         initData,
         validationError: validationResult.error,
         theme,

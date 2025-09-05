@@ -157,6 +157,16 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                 style={{ scrollBehavior: 'smooth' }}
             >
                 <ChatMessages
+                    senderProfile={{
+                        _id: 'watermelon123',
+                        userId: 'watermelon123',
+                        avatarUrl:
+                            'https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg',
+                        name: 'Watermelon',
+                        bio: 'I love Mexican food! 🌮',
+                        gender: 'female' as const,
+                        bornYear: 1995,
+                    }}
                     messages={MOCK_MESSAGES}
                     currentUserId="current-user-id"
                     onReply={handleReply}
@@ -174,16 +184,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     );
 }
 
-const WATERMELON_PROFILE = {
-    telegramId: 'watermelon123',
-    name: 'Watermelon',
-    avatarUrl:
-        'https://i.pinimg.com/736x/c1/35/ee/c135ee117c8224dbbcb6e8b1b030e4d4.jpg',
-    bio: 'I love Mexican food! 🌮',
-    gender: 'female' as const,
-    bornYear: 1995,
-};
-
 // Mock data following the schema structure
 const MOCK_MESSAGES: Message[] = [
     {
@@ -192,7 +192,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'Hey! Welcome to Sakar Pyaw 👋',
         createdAt: Date.now() - 50000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '2',
@@ -207,7 +206,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'What kind of food do you like?',
         createdAt: Date.now() - 40000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '4',
@@ -222,7 +220,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'Oh, can you bring some salsa?',
         createdAt: Date.now() - 30000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '6',
@@ -247,7 +244,6 @@ const MOCK_MESSAGES: Message[] = [
                 url: 'https://i.pinimg.com/736x/da/2d/f6/da2df612c785b2cf2ee1437eb43516d7.jpg',
             },
         ],
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '8',
@@ -267,7 +263,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'Great choice! That one is really good 👍',
         createdAt: Date.now() - 10000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '10',
@@ -299,7 +294,6 @@ const MOCK_MESSAGES: Message[] = [
             type: 'image',
             text: '',
         },
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '13',
@@ -307,7 +301,6 @@ const MOCK_MESSAGES: Message[] = [
         senderUserId: 'other-user-id',
         message: 'We should definitely go there sometime!',
         createdAt: Date.now() - 2000,
-        senderProfile: WATERMELON_PROFILE,
     },
     {
         _id: '14',

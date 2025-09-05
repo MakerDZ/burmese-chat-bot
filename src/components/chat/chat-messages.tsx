@@ -13,20 +13,22 @@ import {
 import { Copy, Reply, Image as ImageIcon } from 'lucide-react';
 import { ProfileDialog } from '@/components/profile/profile-dialog';
 
+export interface Profile {
+    _id: string;
+    userId: string;
+    avatarUrl: string;
+    name: string;
+    bio?: string;
+    gender?: 'male' | 'female';
+    bornYear?: number;
+}
+
 export interface Message {
     _id: string;
     chatRoomId: string;
     senderUserId: string;
     message?: string;
     createdAt: number;
-    senderProfile?: {
-        telegramId: string;
-        avatarUrl: string;
-        name: string;
-        bio?: string;
-        gender?: 'male' | 'female';
-        bornYear?: number;
-    };
     attachments?: Array<{
         type: 'image' | 'video' | 'file';
         url: string;
@@ -41,6 +43,7 @@ export interface Message {
 interface ChatMessagesProps {
     messages: Message[];
     currentUserId: string;
+    senderProfile?: Profile;
     onReply?: (message: Message) => void;
     onImageLoad?: () => void;
 }
@@ -48,6 +51,7 @@ interface ChatMessagesProps {
 export function ChatMessages({
     messages,
     currentUserId,
+    senderProfile,
     onReply,
     onImageLoad,
 }: ChatMessagesProps) {
@@ -100,20 +104,24 @@ export function ChatMessages({
                                     isMe ? 'flex-row-reverse' : ''
                                 }`}
                             >
-                                {!isMe && message.senderProfile && (
+                                {!isMe && senderProfile && (
                                     <ProfileDialog
-                                        profile={message.senderProfile}
+                                        profile={{
+                                            _id: senderProfile._id,
+                                            userId: senderProfile.userId,
+                                            avatarUrl: senderProfile.avatarUrl,
+                                            name: senderProfile.name,
+                                            bio: senderProfile.bio,
+                                            gender: senderProfile.gender,
+                                            bornYear: senderProfile.bornYear,
+                                        }}
                                         trigger={
                                             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80">
                                                 <Image
                                                     src={
-                                                        message.senderProfile
-                                                            .avatarUrl
+                                                        senderProfile.avatarUrl
                                                     }
-                                                    alt={
-                                                        message.senderProfile
-                                                            .name
-                                                    }
+                                                    alt={senderProfile.name}
                                                     width={32}
                                                     height={32}
                                                     className="w-full h-full object-cover"
@@ -123,6 +131,9 @@ export function ChatMessages({
                                             </div>
                                         }
                                     />
+                                )}
+                                {!isMe && !senderProfile && (
+                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-200" />
                                 )}
                                 <div
                                     className={`max-w-[70%] rounded-2xl px-4 py-2 select-none ${

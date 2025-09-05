@@ -77,7 +77,7 @@ export function ProfileComponent({ profile }: { profile: any }) {
             if (validateProfile(formData)) {
                 setIsSubmitting(true);
                 await updateProfile({
-                    telegramId: telegramId,
+                    userId: profile.userId,
                     profile: {
                         name: formData.name,
                         bio: formData.bio ?? '',
@@ -131,9 +131,9 @@ export function ProfileComponent({ profile }: { profile: any }) {
     };
 
     const buttonOutlineStyle = {
-        backgroundColor: isDark ? '#1F1F1F' : '#FFFFFF',
+        backgroundColor: isDark ? '#2A2A2A' : '#F5F5F5',
         color: isDark ? '#FFFFFF' : '#000000',
-        border: `1px solid ${isDark ? '#FFFFFF' : '#000000'}`,
+        border: `2px solid ${isDark ? '#404040' : '#E0E0E0'}`,
     };
 
     return (

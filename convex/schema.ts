@@ -4,7 +4,7 @@ import { v } from 'convex/values';
 export default defineSchema({
     // users
     users: defineTable({
-        telegramId: v.optional(v.string()),
+        telegramId: v.string(),
         firstName: v.optional(v.string()),
         lastName: v.optional(v.string()),
         username: v.optional(v.string()),
@@ -25,19 +25,44 @@ export default defineSchema({
 
     // chats rooms
     chatRooms: defineTable({
-        participantIds: v.array(v.string()),
+        participantIds: v.array(v.id('users')),
         createdAt: v.number(),
         lastMessageAt: v.optional(v.number()),
         lastMessagePreview: v.optional(v.string()),
-        type: v.optional(v.union(v.literal('matching'), v.literal('friend'))),
-        isEnded: v.optional(v.boolean()),
-        isDeleted: v.optional(v.boolean()),
-    }).index('by_participantIds', ['participantIds']),
+        type: v.union(v.literal('matching'), v.literal('friend')),
+        status: v.union(
+            v.literal('waiting'),
+            v.literal('active'),
+            v.literal('ended'),
+            v.literal('deleted')
+        ),
+    })
+        .index('by_participantIds', ['participantIds'])
+        .index('by_type', ['type']),
+
+    // chat participants
+    chatParticipants: defineTable({
+        chatRoomId: v.id('chatRooms'),
+        status: v.union(
+            v.literal('waiting'),
+            v.literal('active'),
+            v.literal('ended'),
+            v.literal('deleted')
+        ),
+        type: v.union(v.literal('matching'), v.literal('friend')),
+        userId: v.id('users'),
+    })
+        .index('by_userId', ['userId'])
+        .index('by_chatRoomId', ['chatRoomId'])
+        .index('by_userId_chatRoomId', ['userId', 'chatRoomId'])
+        .index('by_status', ['status'])
+        .index('by_type', ['type'])
+        .index('by_type_userId', ['type', 'userId']),
 
     // chat messages
     chatMessages: defineTable({
         chatRoomId: v.id('chatRooms'),
-        senderUserId: v.string(),
+        senderUserId: v.id('users'),
         message: v.optional(v.string()),
 
         replyToMessageId: v.optional(v.id('chatMessages')),

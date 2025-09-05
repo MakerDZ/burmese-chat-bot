@@ -2,67 +2,70 @@
 
 import { Search } from '@/components/home/search';
 import { NotSearching } from '@/components/home/not-searching';
+import { SearchSkeleton } from '@/components/home/search-skeleton';
 import { useTelegramTheme } from '@/hooks/useTelegramTheme';
-import { useValidateTelegramUser } from '@/hooks/useValidateTelegramUser';
+import { useTelegram } from '@/providers/TelegramProvider';
+import { useAmIInMatchingRoom } from '@/hooks/useChatRoom';
+import { api } from '../../convex/_generated/api';
+import { useMutation } from 'convex/react';
 import { useState } from 'react';
 
 export default function Home() {
-    const {
-        profile,
-        isLoading: isUserLoading,
-        isValidating,
-        error,
-    } = useValidateTelegramUser();
+    const { initData, user, validationError } = useTelegram();
+    const createChatRoom = useMutation(api.room.createChatRoom);
+    const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
-    const [isSearch, setIsSearch] = useState(true);
+    const {
+        data,
+        isPending: isAmIInMatchingRoomPending,
+        error: errorAmIInMatchingRoom,
+    } = useAmIInMatchingRoom(initData!, user?.id.toString() ?? '');
 
     const { backgroundColor } = useTelegramTheme();
 
-    if (isUserLoading || isValidating) {
+    if (
+        !user ||
+        validationError ||
+        !initData ||
+        isAmIInMatchingRoomPending ||
+        errorAmIInMatchingRoom
+    ) {
         return (
             <div
                 className="flex flex-col min-h-screen w-full"
                 style={{ backgroundColor }}
-            ></div>
+            >
+                <SearchSkeleton />
+            </div>
         );
     }
 
-    if (error) {
-        return <div className="text-red-500">Error: {error}</div>;
-    }
+    const handleEndChat = () => {};
 
-    if (!profile) {
-        return (
-            <div
-                className="flex flex-col min-h-screen w-full"
-                style={{ backgroundColor }}
-            ></div>
-        );
-    }
-
-    const handleStartSearching = () => {
-        setIsSearch(false); // Switch to not-searching state
-    };
-
-    const handleEndChat = () => {
-        setIsSearch(true); // Switch back to search state
-    };
-
-    const handleNewPartner = () => {
-        setIsSearch(true); // Switch to search state first
-        // Simulate the searching process after a short delay
-        setTimeout(() => {
-            setIsSearch(false); // Then switch to not-searching state
-        }, 3000); // 3 seconds to simulate finding a new partner
-    };
+    const handleNewPartner = () => {};
 
     return (
         <div
             className="flex flex-col min-h-screen w-full"
             style={{ backgroundColor }}
         >
-            {isSearch ? (
-                <Search onStartSearching={handleStartSearching} />
+            {!data || data.status === 'waiting' ? (
+                <Search
+                    onStartSearching={async () => {
+                        setIsCreatingRoom(true);
+                        try {
+                            await createChatRoom({
+                                initData,
+                                telegramId: user?.id.toString() ?? '',
+                            });
+                        } catch (error) {
+                            setIsCreatingRoom(false);
+                        } finally {
+                            setIsCreatingRoom(false);
+                        }
+                    }}
+                    isSearching={isCreatingRoom || data?.status === 'waiting'}
+                />
             ) : (
                 <NotSearching
                     onEndChat={handleEndChat}

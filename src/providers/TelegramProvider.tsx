@@ -1,6 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { api } from '../../convex/_generated/api';
+import { useMutation } from 'convex/react';
 
 type TelegramUser = {
     id: number;
@@ -25,14 +27,18 @@ type TelegramContextType = {
     tg: any | null;
     user: TelegramUser | null;
     initData: string | null;
+    validationError: string | null;
     theme: TelegramTheme | null;
+    loading: boolean;
 };
 
 const TelegramContext = createContext<TelegramContextType>({
     tg: null,
     user: null,
     initData: null,
+    validationError: null,
     theme: null,
+    loading: true,
 });
 
 export const useTelegram = () => useContext(TelegramContext);
@@ -40,40 +46,74 @@ export const useTelegram = () => useContext(TelegramContext);
 export const TelegramProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
-    const [isClient, setIsClient] = useState(false);
     const [tg, setTg] = useState<any | null>(null);
     const [user, setUser] = useState<TelegramUser | null>(null);
     const [initData, setInitData] = useState<string | null>(null);
     const [theme, setTheme] = useState<TelegramTheme | null>(null);
+    const [loading, setLoading] = useState(true);
+    const validateTelegramUser = useMutation(api.verify.validateTelegramUser);
 
-    // Handle client-side initialization
+    const [validationResult, setValidationResult] = useState<{
+        error: string | null;
+    }>({
+        error: null,
+    });
+
     useEffect(() => {
-        setIsClient(true);
-
-        const webApp = (window as any).Telegram?.WebApp;
-        if (webApp) {
-            setTg(webApp);
-            setUser(webApp.initDataUnsafe?.user || null);
-            setInitData(webApp.initData || null);
-            setTheme(webApp.themeParams || null);
-
-            // Listen for theme changes (dark <-> light)
-            webApp.onEvent('themeChanged', () => {
+        const initTelegram = async () => {
+            const webApp = (window as any).Telegram?.WebApp;
+            if (webApp) {
+                setTg(webApp);
+                setUser(webApp.initDataUnsafe?.user || null);
+                setInitData(webApp.initData || null);
                 setTheme(webApp.themeParams || null);
-            });
 
-            // Tell Telegram the app is ready
-            webApp.ready();
-        }
+                try {
+                    const result = await validateTelegramUser({
+                        initData: webApp.initData,
+                        user: webApp.initDataUnsafe?.user.id.toString(),
+                    });
+                    setValidationResult({
+                        error: null,
+                    });
+                } catch (err) {
+                    setValidationResult({
+                        error:
+                            err instanceof Error
+                                ? err.message
+                                : 'Validation failed',
+                    });
+                }
+
+                webApp.onEvent('themeChanged', () => {
+                    setTheme(webApp.themeParams || null);
+                });
+
+                webApp.ready();
+            }
+            setLoading(false);
+        };
+
+        initTelegram();
     }, []);
 
-    // Provide a stable value for SSR
     const contextValue = {
-        tg: isClient ? tg : null,
-        user: isClient ? user : null,
-        initData: isClient ? initData : null,
-        theme: isClient ? theme : null,
+        tg,
+        user,
+        initData,
+        validationError: validationResult.error,
+        theme,
+        loading,
     };
+
+    if (loading) {
+        // ✅ Show a fullscreen loading screen
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-black text-white">
+                Loading...
+            </div>
+        );
+    }
 
     return (
         <TelegramContext.Provider value={contextValue}>

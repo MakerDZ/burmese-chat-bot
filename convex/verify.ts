@@ -1,12 +1,19 @@
-'use node';
-import { action } from './_generated/server';
-import crypto from 'crypto';
+import { mutation } from './_generated/server';
 import { v } from 'convex/values';
 import { api } from './_generated/api';
 
-function validateInitData(initData: string, botToken: string) {
+// No "use node"
+
+function toHex(buf: ArrayBuffer) {
+    return Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+export async function validateInitData(initData: string, botToken: string) {
     const urlParams = new URLSearchParams(initData);
-    const hash = urlParams.get('hash')!;
+    const hash = urlParams.get('hash');
+    if (!hash) return false;
     urlParams.delete('hash');
 
     const dataCheckString = [...urlParams.entries()]
@@ -14,20 +21,41 @@ function validateInitData(initData: string, botToken: string) {
         .sort()
         .join('\n');
 
-    const secretKey = crypto
-        .createHmac('sha256', 'WebAppData')
-        .update(botToken)
-        .digest();
+    const enc = new TextEncoder();
 
-    const computedHash = crypto
-        .createHmac('sha256', secretKey)
-        .update(dataCheckString)
-        .digest('hex');
+    // Step 1: secretKey = HMAC_SHA256("WebAppData", botToken)
+    const webAppDataKey = await crypto.subtle.importKey(
+        'raw',
+        enc.encode('WebAppData'),
+        { name: 'HMAC', hash: { name: 'SHA-256' } },
+        false,
+        ['sign']
+    );
+    const secretKeyBytes = await crypto.subtle.sign(
+        'HMAC',
+        webAppDataKey,
+        enc.encode(botToken)
+    );
 
-    return computedHash === hash;
+    // Step 2: computedHash = HMAC_SHA256(secretKey, dataCheckString) in hex
+    const hmacKey = await crypto.subtle.importKey(
+        'raw',
+        new Uint8Array(secretKeyBytes),
+        { name: 'HMAC', hash: { name: 'SHA-256' } },
+        false,
+        ['sign']
+    );
+    const signature = await crypto.subtle.sign(
+        'HMAC',
+        hmacKey,
+        enc.encode(dataCheckString)
+    );
+    const computedHex = toHex(signature);
+
+    return computedHex === hash;
 }
 
-export const validateTelegramUser = action({
+export const validateTelegramUser = mutation({
     args: {
         initData: v.string(),
         user: v.string(),
@@ -37,16 +65,6 @@ export const validateTelegramUser = action({
         args
     ): Promise<{
         ok: true;
-        profile: {
-            _id: string;
-            _creationTime: number;
-            bio?: string | undefined;
-            gender?: 'male' | 'female' | undefined;
-            bornYear?: number | undefined;
-            userId: string;
-            avatarUrl: string;
-            name: string;
-        } | null;
     }> => {
         const botToken = process.env.TELEGRAM_BOT_TOKEN!;
         const isValid = validateInitData(args.initData, botToken);
@@ -55,24 +73,6 @@ export const validateTelegramUser = action({
             throw new Error('Invalid Telegram initData');
         }
 
-        const { profile } = await ctx.runQuery(api.user.getUser, {
-            telegramId: args.user,
-        });
-
-        // Remove telegramId from the returned profile for security
-        const safeProfile = profile
-            ? {
-                  _id: profile._id,
-                  _creationTime: profile._creationTime,
-                  bio: profile.bio,
-                  gender: profile.gender,
-                  bornYear: profile.bornYear,
-                  userId: profile.userId,
-                  avatarUrl: profile.avatarUrl,
-                  name: profile.name,
-              }
-            : null;
-
-        return { ok: true, profile: safeProfile };
+        return { ok: true };
     },
 });

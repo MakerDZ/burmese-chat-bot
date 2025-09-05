@@ -2,23 +2,16 @@
 
 import { ProfileComponent } from '@/components/profile/profile-component';
 import { Loading } from '@/components/ui/loading';
-import { useValidateTelegramUser } from '@/hooks/useValidateTelegramUser';
+import { useProfile } from '@/hooks/useProfile';
+import { useTelegram } from '@/providers/TelegramProvider';
 
 export default function Profile() {
-    const { profile, isLoading, isValidating, error } =
-        useValidateTelegramUser();
+    const { initData, user, validationError } = useTelegram();
+    const { data, isPending, error } = useProfile(user?.id.toString() ?? '');
 
-    if (isLoading || isValidating) {
+    if (validationError || !user || !initData || isPending || error) {
         return <Loading />;
     }
 
-    if (error) {
-        return <div className="text-red-500">Error: {error}</div>;
-    }
-
-    if (!profile) {
-        return <Loading />;
-    }
-
-    return <ProfileComponent profile={profile} />;
+    return <ProfileComponent profile={data} />;
 }

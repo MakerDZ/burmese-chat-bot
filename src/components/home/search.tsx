@@ -6,9 +6,15 @@ import { Button } from '../ui/button';
 
 interface SearchProps {
     onStartSearching?: () => void;
+    isSearching?: boolean;
+    onSearchingChange?: (isSearching: boolean) => void;
 }
 
-export function Search({ onStartSearching }: SearchProps) {
+export function Search({
+    onStartSearching,
+    isSearching: externalIsSearching,
+    onSearchingChange,
+}: SearchProps) {
     const { textColor, isDark } = useTelegramTheme();
     const gifImages = [
         'https://i.pinimg.com/originals/78/18/45/7818455671b1385b18d7257abaa863c2.gif',
@@ -20,8 +26,8 @@ export function Search({ onStartSearching }: SearchProps) {
     ];
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
-    const [isSearching, setIsSearching] = useState(false);
     const [searchDots, setSearchDots] = useState('');
+    const isSearching = externalIsSearching ?? false;
 
     const buttonStyle = {
         backgroundColor: isDark ? '#FFFFFF' : '#000000',
@@ -63,14 +69,7 @@ export function Search({ onStartSearching }: SearchProps) {
     }, [isSearching]);
 
     const handleSearchClick = useCallback(() => {
-        setIsSearching(true);
-
-        // Simulate search delay (2-3 seconds)
-        setTimeout(() => {
-            setIsSearching(false);
-            // Call the parent callback to switch to not-searching state
-            onStartSearching?.();
-        }, 2500); // 2.5 seconds delay
+        onStartSearching?.();
     }, [onStartSearching]);
 
     return (

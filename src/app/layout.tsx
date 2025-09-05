@@ -41,14 +41,14 @@ export default function RootLayout({
                 suppressHydrationWarning
             >
                 <Toaster />
-                <TelegramProvider>
-                    <ConvexClientProvider>
+                <ConvexClientProvider>
+                    <TelegramProvider>
                         <main className="flex flex-col min-h-screen relative">
                             {children}
                             <BottomMenu />
                         </main>
-                    </ConvexClientProvider>
-                </TelegramProvider>
+                    </TelegramProvider>
+                </ConvexClientProvider>
             </body>
         </html>
     );

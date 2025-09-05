@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as profile from "../profile.js";
+import type * as room from "../room.js";
 import type * as user from "../user.js";
 import type * as verify from "../verify.js";
 
@@ -27,6 +28,7 @@ import type * as verify from "../verify.js";
  */
 declare const fullApi: ApiFromModules<{
   profile: typeof profile;
+  room: typeof room;
   user: typeof user;
   verify: typeof verify;
 }>;

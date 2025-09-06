@@ -11,6 +11,11 @@ export function useAmIInMatchingRoom(initData: string) {
     );
 }
 
-export function useGetMatchingRoom(chatRoomId: Id<'chatRooms'>) {
-    return useQuery(convexQuery(api.room.getMatchingRoom, { chatRoomId }));
+export function useGetMatchingRoom(
+    initData: string,
+    chatRoomId: Id<'chatRooms'>
+) {
+    return useQuery(
+        convexQuery(api.room.getMatchingRoom, { chatRoomId, initData })
+    );
 }

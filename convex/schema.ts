@@ -30,6 +30,7 @@ export default defineSchema({
         lastMessageAt: v.optional(v.number()),
         lastMessagePreview: v.optional(v.string()),
         type: v.union(v.literal('matching'), v.literal('friend')),
+        friendRequestId: v.optional(v.id('users')),
         status: v.union(
             v.literal('waiting'),
             v.literal('active'),
@@ -62,6 +63,12 @@ export default defineSchema({
         message: v.optional(v.string()),
 
         replyToMessageId: v.optional(v.id('chatMessages')),
+        replyPreview: v.optional(
+            v.object({
+                type: v.union(v.literal('text'), v.literal('image')),
+                text: v.string(),
+            })
+        ),
 
         attachments: v.optional(
             v.array(

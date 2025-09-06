@@ -160,6 +160,17 @@ export function ChatInput({
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                if (
+                                    message.trim() ||
+                                    selectedFiles.length > 0
+                                ) {
+                                    handleSend();
+                                }
+                            }
+                        }}
                         placeholder="Message..."
                         className="w-full rounded-full px-4 py-2.5 outline-none"
                         style={{

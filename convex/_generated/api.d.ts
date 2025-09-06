@@ -13,6 +13,8 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as message from "../message.js";
+import type * as model_telegram from "../model/telegram.js";
 import type * as profile from "../profile.js";
 import type * as room from "../room.js";
 import type * as user from "../user.js";
@@ -27,6 +29,8 @@ import type * as verify from "../verify.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  message: typeof message;
+  "model/telegram": typeof model_telegram;
   profile: typeof profile;
   room: typeof room;
   user: typeof user;

@@ -1,5 +1,6 @@
 import { mutation } from './_generated/server';
 import { v } from 'convex/values';
+import { validateTelegramUserHelper } from './model/telegram';
 
 function toHex(buf: ArrayBuffer) {
     return Array.from(new Uint8Array(buf))
@@ -57,31 +58,11 @@ export const validateTelegramUser = mutation({
         initData: v.string(),
     },
     handler: async (ctx, args) => {
-        const botToken = process.env.TELEGRAM_BOT_TOKEN!;
-        const isValid = await validateInitData(args.initData, botToken);
-
-        if (!isValid) {
-            throw new Error('Invalid Telegram initData');
-        }
-
-        // ✅ Parse safe user data after validation
-        const urlParams = new URLSearchParams(args.initData);
-        const userJson = urlParams.get('user');
-        const user = userJson ? JSON.parse(userJson) : null;
-        
-        const profile = await ctx.db
-            .query('profiles')
-            .withIndex('by_telegramId', (q) =>
-                q.eq('telegramId', user.id.toString())
-            )
-            .first();
-        if (!profile) {
-            throw new Error('Profile not found');
-        }
+        const { profile, user } = await validateTelegramUserHelper(ctx, args);
 
         return {
             ok: true,
-            user, // contains user.id, first_name, etc.
+            user,
             profile,
         };
     },

@@ -1,24 +1,13 @@
 import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
-import { validateInitData } from './verify';
+import { validateTelegramUserHelper } from './model/telegram';
 
 export const createChatRoom = mutation({
     args: {
         initData: v.string(),
     },
     handler: async (ctx, args) => {
-        const isValid = await validateInitData(
-            args.initData,
-            process.env.TELEGRAM_BOT_TOKEN!
-        );
-        if (!isValid) {
-            throw new Error('Invalid Telegram initData');
-        }
-
-        // ✅ Parse safe user data after validation
-        const urlParams = new URLSearchParams(args.initData);
-        const userJson = urlParams.get('user');
-        const user = userJson ? JSON.parse(userJson) : null;
+        const { user } = await validateTelegramUserHelper(ctx, args);
 
         const currentParticipantId = await ctx.db
             .query('users')
@@ -83,18 +72,7 @@ export const amIInMatchingRoom = query({
         initData: v.string(),
     },
     handler: async (ctx, args) => {
-        const isValid = await validateInitData(
-            args.initData,
-            process.env.TELEGRAM_BOT_TOKEN!
-        );
-        if (!isValid) {
-            throw new Error('Invalid Telegram initData');
-        }
-
-        // ✅ Parse safe user data after validation
-        const urlParams = new URLSearchParams(args.initData);
-        const userJson = urlParams.get('user');
-        const user = userJson ? JSON.parse(userJson) : null;
+        const { user } = await validateTelegramUserHelper(ctx, args);
 
         const participantId = await ctx.db
             .query('users')
@@ -123,10 +101,18 @@ export const amIInMatchingRoom = query({
 
 export const getMatchingRoom = query({
     args: {
+        initData: v.string(),
         chatRoomId: v.id('chatRooms'),
     },
     handler: async (ctx, args) => {
+        const { profile } = await validateTelegramUserHelper(ctx, args);
+
         const chatRoom = await ctx.db.get(args.chatRoomId);
+
+        if (!chatRoom?.participantIds.includes(profile.userId)) {
+            throw new Error('Unauthorized Request');
+        }
+
         if (chatRoom?.status === 'active') {
             // Fetch profiles for all participants
             const participantProfiles = await Promise.all(
@@ -135,8 +121,7 @@ export const getMatchingRoom = query({
                         .query('profiles')
                         .withIndex('by_userId', (q) => q.eq('userId', userId))
                         .first();
-                    console.log(profiles);
-                    console.log('\n\n\n\n\n\n\n');
+
                     return profiles; // Get the first profile since there should be only one per user
                 })
             );
@@ -156,8 +141,6 @@ export const getMatchingRoom = query({
                     gender: profile.gender,
                     bornYear: profile.bornYear,
                 }));
-
-            console.log(sanitizedProfiles);
 
             return {
                 chatRoom,

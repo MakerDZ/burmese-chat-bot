@@ -68,6 +68,7 @@ export default function Home() {
                 />
             ) : (
                 <NotSearching
+                    initData={initData}
                     myProfile={validatedProfile}
                     chatRoomId={data.chatRoomId}
                     onEndChat={handleEndChat}
